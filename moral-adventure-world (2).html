@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102a56">
+  <meta name="description" content="Moral Adventure World — permainan Pendidikan Moral Tahun 6 tentang nilai moral terhadap negara.">
+  <title>Moral Adventure World: Misi Cinta akan Negara</title>
+  <style>
+    :root {
+      --navy: #102a56;
+      --blue: #1d4ed8;
+      --gold: #facc15;
+      --cream: #fff8dc;
+      --green: #15803d;
+      --red: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #13213a;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #a5e5ff 0%, #e7f8ff 52%, #d8f6c7 100%);
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    .page { width: min(1100px, 100%); margin: 0 auto; padding: 18px; }
+    header { text-align: center; padding: 10px 8px 18px; }
+    .eyebrow { margin: 0 0 6px; font-weight: 800; letter-spacing: .12em; color: var(--navy); text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; color: var(--navy); font-size: clamp(1.7rem, 4vw, 3rem); line-height: 1.08; }
+    .subtitle { margin: 9px 0 0; font-weight: 650; }
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 2px solid rgba(16,42,86,.12);
+      border-radius: 22px;
+      padding: clamp(16px, 3vw, 28px);
+      box-shadow: 0 12px 32px rgba(16,42,86,.12);
+    }
+    .hidden { display: none !important; }
+    .start-panel { max-width: 650px; margin: 0 auto; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+    label { display: block; font-weight: 750; margin-bottom: 6px; }
+    input {
+      width: 100%; border: 2px solid #b9c8df; border-radius: 12px;
+      padding: 12px; background: white; color: #13213a;
+    }
+    input:focus { outline: 3px solid #93c5fd; border-color: var(--blue); }
+    .btn {
+      border: 0; border-radius: 13px; padding: 12px 18px; font-weight: 800;
+      background: var(--blue); color: white; box-shadow: 0 4px 0 #153eaa;
+    }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #153eaa; }
+    .btn.gold { background: var(--gold); color: #332500; box-shadow: 0 4px 0 #c18c00; }
+    .btn.secondary { background: #e7eef9; color: var(--navy); box-shadow: 0 4px 0 #b7c6de; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .center { text-align: center; }
+    .instructions { background: #f0f8ff; border-radius: 14px; padding: 12px 16px; text-align: left; line-height: 1.55; }
+    .hud { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .pill { background: white; border: 2px solid #d4e2f4; padding: 8px 12px; border-radius: 999px; font-weight: 800; }
+    .game-shell { position: relative; overflow: hidden; border: 4px solid var(--navy); border-radius: 18px; background: #91dcff; box-shadow: 0 12px 30px rgba(16,42,86,.18); }
+    canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #91dcff; image-rendering: pixelated; }
+    .game-help { margin: 10px 0 0; text-align: center; color: #284467; font-size: .94rem; }
+    .touch-controls { display: flex; justify-content: space-between; gap: 14px; margin-top: 12px; }
+    .touch-group { display: flex; gap: 10px; }
+    .touch-btn { min-width: 62px; min-height: 56px; border: 2px solid #c4d4ed; border-radius: 14px; background: white; font-size: 1.3rem; font-weight: 900; color: var(--navy); }
+    .touch-btn.jump { background: var(--gold); border-color: #d5a900; min-width: 105px; }
+    .quiz-overlay {
+      position: absolute; inset: 0; display: grid; place-items: center; padding: 12px;
+      background: rgba(8,24,53,.72); z-index: 2;
+    }
+    .quiz-card { width: min(570px, 100%); max-height: 100%; overflow-y: auto; background: white; border-radius: 18px; padding: clamp(14px, 3vw, 24px); box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+    .quiz-card h2 { margin: 0 0 8px; color: var(--navy); font-size: clamp(1.1rem, 2.6vw, 1.6rem); }
+    .quiz-card p { margin: 0 0 14px; line-height: 1.45; }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .answer-btn { text-align: left; border: 2px solid #d2dced; background: #f7faff; color: #17243b; border-radius: 12px; padding: 11px; font-weight: 700; }
+    .answer-btn:hover:not(:disabled), .answer-btn:focus-visible { border-color: var(--blue); background: #eaf2ff; }
+    .answer-btn:disabled { cursor: default; opacity: .85; }
+    .feedback { margin-top: 12px !important; padding: 10px 12px; border-radius: 10px; font-weight: 750; }
+    .feedback.good { background: #dcfce7; color: #166534; }
+    .feedback.bad { background: #fee2e2; color: #991b1b; }
+    .result-panel { max-width: 680px; margin: 0 auto; }
+    .result-score { font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 900; color: var(--navy); margin: 8px 0; }
+    .result-list { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 9px; text-align: left; }
+    .result-list li { background: #f0f6ff; padding: 11px 14px; border-radius: 10px; }
+    .footer { text-align: center; padding: 18px 8px 6px; font-size: .84rem; color: #36516e; }
+    @media (max-width: 600px) {
+      .page { padding: 10px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .answers { grid-template-columns: 1fr; }
+      .hud { justify-content: center; }
+      .touch-btn { min-width: 54px; min-height: 52px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <p class="eyebrow">Pendidikan Moral · Tahun 6</p>
+      <h1>🇲🇾 Moral Adventure World</h1>
+      <p class="subtitle">Misi Cinta akan Negara</p>
+    </header>
+
+    <section id="startScreen" class="panel start-panel">
+      <div class="center">
+        <div aria-hidden="true" style="font-size:4rem">🏰 🪙 🇲🇾</div>
+        <h2>Selamat datang, Pejuang Negara!</h2>
+        <p>Bantu pengembara mengumpul syiling, menjawab kuiz dan membuka laluan ke istana.</p>
+      </div>
+      <form id="startForm">
+        <div class="form-grid">
+          <div>
+            <label for="studentName">Nama murid</label>
+            <input id="studentName" name="studentName" autocomplete="name" maxlength="70" required placeholder="Masukkan nama penuh">
+          </div>
+          <div>
+            <label for="studentClass">Kelas</label>
+            <input id="studentClass" name="studentClass" maxlength="30" required placeholder="Contoh: 6 Bestari">
+          </div>
+        </div>
+        <div class="instructions">
+          <strong>Cara bermain</strong>
+          <ul>
+            <li>Bergerak dengan kekunci ← → atau A/D.</li>
+            <li>Tekan Space, ↑ atau W untuk melompat.</li>
+            <li>Kutip syiling emas untuk mata bonus.</li>
+            <li>Sentuh blok ❓ untuk menjawab soalan.</li>
+            <li>Jawapan betul: +5 mata. Jawapan salah: hilang 1 nyawa.</li>
+          </ul>
+        </div>
+        <p class="center"><button class="btn gold" type="submit">MULA PERMAINAN ▶</button></p>
+      </form>
+    </section>
+
+    <section id="gameScreen" class="hidden">
+      <div class="hud" aria-live="polite">
+        <span class="pill" id="hudName">👤 Murid</span>
+        <span class="pill">⭐ Mata: <span id="scoreValue">0</span></span>
+        <span class="pill">❤️ Nyawa: <span id="livesValue">3</span></span>
+        <span class="pill">❓ Soalan: <span id="progressValue">0/5</span></span>
+        <button id="musicToggle" class="btn secondary" type="button" aria-pressed="false">♫ Muzik: OFF</button>
+      </div>
+      <div class="game-shell">
+        <canvas id="gameCanvas" width="960" height="540" aria-label="Permainan platformer 2D"></canvas>
+        <div id="quizOverlay" class="quiz-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+          <div class="quiz-card">
+            <p id="quizNumber" class="eyebrow">Checkpoint 1/5</p>
+            <h2 id="quizTitle">Soalan</h2>
+            <p id="quizQuestion"></p>
+            <div id="answerButtons" class="answers"></div>
+            <p id="quizFeedback" class="feedback hidden" aria-live="polite"></p>
+            <button id="continueButton" class="btn gold hidden" type="button">TERUSKAN ▶</button>
+          </div>
+        </div>
+      </div>
+      <div class="touch-controls" aria-label="Kawalan sentuh">
+        <div class="touch-group">
+          <button class="touch-btn" type="button" data-control="left" aria-label="Bergerak ke kiri">◀</button>
+          <button class="touch-btn" type="button" data-control="right" aria-label="Bergerak ke kanan">▶</button>
+        </div>
+        <button class="touch-btn jump" type="button" data-control="jump">LOMPAT ⤴</button>
+      </div>
+      <p class="game-help">Petua: sentuh blok tanda soal ❓ untuk membuka kuiz. Selesaikan semua 5 soalan untuk sampai ke istana.</p>
+    </section>
+
+    <section id="resultScreen" class="panel result-panel hidden center">
+      <div id="resultIcon" style="font-size:4rem" aria-hidden="true">🏆</div>
+      <h2 id="resultTitle">Tahniah, Pejuang Negara!</h2>
+      <p id="resultMessage"></p>
+      <div id="resultScore" class="result-score">0 mata</div>
+      <ul id="resultList" class="result-list"></ul>
+      <button id="restartButton" class="btn gold" type="button">MAIN SEMULA ↻</button>
+      <button id="menuButton" class="btn secondary" type="button">MENU UTAMA</button>
+    </section>
+    <p class="footer">Permainan pembelajaran interaktif · Moral Adventure World</p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const QUESTIONS = [
+      {
+        title: "Cinta akan Negara",
+        question: "Apakah cara menunjukkan cinta akan negara?",
+        options: [
+          "A. Merosakkan harta awam",
+          "B. Menghormati Jalur Gemilang",
+          "C. Membuang sampah di jalan",
+          "D. Merosakkan kemudahan sekolah"
+        ],
+        correct: 1,
+        good: "Tahniah! Kita mesti menghormati Jalur Gemilang sebagai lambang negara.",
+        bad: "Belum tepat! Kita perlu menghormati Jalur Gemilang."
+      },
+      {
+        title: "Semangat Patriotik",
+        question: "Apakah tindakan yang menunjukkan semangat patriotik?",
+        options: [
+          "A. Tidak menghormati lagu Negaraku",
+          "B. Mengejek negara sendiri",
+          "C. Menyanyikan lagu Negaraku dengan hormat",
+          "D. Merosakkan bendera negara"
+        ],
+        correct: 2,
+        good: "Bagus! Kita menunjukkan semangat patriotik dengan menghormati lagu Negaraku.",
+        bad: "Cuba lagi! Kita perlu menghormati lagu kebangsaan."
+      },
+      {
+        title: "Taat Setia kepada Raja dan Negara",
+        question: "Apakah tindakan yang menunjukkan taat setia kepada negara?",
+        options: [
+          "A. Mematuhi undang-undang negara",
+          "B. Melanggar peraturan jalan raya",
+          "C. Merosakkan kemudahan awam",
+          "D. Mengganggu ketenteraman masyarakat"
+        ],
+        correct: 0,
+        good: "Hebat! Kita menunjukkan taat setia dengan mematuhi undang-undang negara.",
+        bad: "Belum betul! Kita hendaklah mematuhi undang-undang negara."
+      },
+      {
+        title: "Sanggup Berkorban untuk Negara",
+        question: "Apakah tindakan yang menunjukkan semangat sanggup berkorban untuk negara?",
+        options: [
+          "A. Mementingkan diri sendiri",
+          "B. Mengabaikan keselamatan negara",
+          "C. Merosakkan harta awam",
+          "D. Membantu mangsa bencana alam"
+        ],
+        correct: 3,
+        good: "Syabas! Membantu mangsa bencana alam ialah amalan yang baik untuk masyarakat dan negara.",
+        bad: "Cuba lagi! Kita boleh membantu orang yang memerlukan ketika bencana."
+      },
+      {
+        title: "Menjaga Nama Baik Negara",
+        question: "Bagaimanakah kita menjaga nama baik negara?",
+        options: [
+          "A. Melakukan vandalisme",
+          "B. Menunjukkan tingkah laku yang baik",
+          "C. Tidak mematuhi undang-undang",
+          "D. Merosakkan tempat awam"
+        ],
+        correct: 1,
+        good: "Tahniah! Tingkah laku yang baik membantu menjaga nama baik negara.",
+        bad: "Belum tepat! Kita perlu menunjukkan tingkah laku yang baik."
+      }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const startScreen = $("startScreen");
+    const gameScreen = $("gameScreen");
+    const resultScreen = $("resultScreen");
+    const canvas = $("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const quizOverlay = $("quizOverlay");
+
+    let studentName = "";
+    let studentClass = "";
+    let score = 0;
+    let lives = 3;
+    let coinsCollected = 0;
+    let questionIndex = 0;
+    let activeQuestion = -1;
+    let quizAnswered = false;
+    let gameState = "menu";
+    let animationId = null;
+    let lastFrame = 0;
+    let audioContext = null;
+    let musicTimer = null;
+    let musicOn = false;
+    let keys = { left: false, right: false };
+    let jumpQueued = false;
+
+    const world = {
+      width: 3000,
+      groundY: 465,
+      cameraX: 0,
+      coins: [],
+      blocks: [],
+      platforms: [],
+      goalX: 2830
+    };
+    const player = { x: 70, y: 390, w: 34, h: 48, vx: 0, vy: 0, speed: 4.1, jumpPower: 12.8, onGround: false };
+
+    function buildWorld() {
+      world.coins = [];
+      world.blocks = [];
+      world.platforms = [
+        { x: 0, y: 465, w: 680, h: 100 },
+        { x: 760, y: 465, w: 500, h: 100 },
+        { x: 1350, y: 465, w: 500, h: 100 },
+        { x: 1940, y: 465, w: 500, h: 100 },
+        { x: 2530, y: 465, w: 470, h: 100 },
+        { x: 330, y: 375, w: 150, h: 20 },
+        { x: 870, y: 375, w: 160, h: 20 },
+        { x: 1510, y: 370, w: 170, h: 20 },
+        { x: 2100, y: 370, w: 170, h: 20 },
+        { x: 2630, y: 375, w: 140, h: 20 }
+      ];
+      const blockXs = [420, 980, 1600, 2190, 2700];
+      world.blocks = blockXs.map((x, i) => ({ x, y: 310, w: 42, h: 42, question: i, used: false }));
+      [250, 300, 350, 590, 850, 900, 1150, 1430, 1490, 1750, 2020, 2080, 2330, 2590, 2650, 2790].forEach((x, i) => {
+        world.coins.push({ x, y: i % 3 === 0 ? 330 : 405, r: 11, collected: false });
+      });
+    }
+
+    function resetGame() {
+      score = 0; lives = 3; coinsCollected = 0; questionIndex = 0;
+      activeQuestion = -1; quizAnswered = false; gameState = "playing";
+      world.cameraX = 0;
+      player.x = 70; player.y = 390; player.vx = 0; player.vy = 0; player.onGround = false;
+      keys = { left: false, right: false }; jumpQueued = false;
+      buildWorld();
+      updateHUD();
+      startScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      gameScreen.classList.remove("hidden");
+      quizOverlay.classList.add("hidden");
+      lastFrame = 0;
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function updateHUD() {
+      $("hudName").textContent = "👤 " + studentName + " · " + studentClass;
+      $("scoreValue").textContent = score;
+      $("livesValue").textContent = lives;
+      $("progressValue").textContent = questionIndex + "/5";
+    }
+
+    function gameLoop(timestamp) {
+      if (gameState !== "playing") return;
+      const dt = lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1;
+      lastFrame = timestamp;
+      updatePlayer(dt);
+      updateCoins();
+      updateCamera();
+      drawWorld();
+      checkBlockCollision();
+      if (player.y > canvas.height + 220) {
+        player.x = Math.max(0, player.x - 100);
+        player.y = 350;
+        player.vy = 0;
+        lives--;
+        updateHUD();
+        if (lives <= 0) { endGame(false); return; }
+      }
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function updatePlayer(dt) {
+      player.vx = (keys.right ? player.speed : 0) - (keys.left ? player.speed : 0);
+      player.x += player.vx * dt;
+      player.x = Math.max(0, Math.min(world.width - player.w, player.x));
+      if (jumpQueued && player.onGround) {
+        player.vy = -player.jumpPower;
+        player.onGround = false;
+      }
+      jumpQueued = false;
+      player.vy += 0.62 * dt;
+      player.y += player.vy * dt;
+      player.onGround = false;
+      for (const p of world.platforms) {
+        const horizontal = player.x + player.w > p.x && player.x < p.x + p.w;
+        const previousBottom = player.y + player.h - player.vy * dt;
+        const bottom = player.y + player.h;
+        if (horizontal && player.vy >= 0 && previousBottom <= p.y + 4 && bottom >= p.y) {
+          player.y = p.y - player.h;
+          player.vy = 0;
+          player.onGround = true;
+        }
+      }
+    }
+
+    function updateCoins() {
+      for (const coin of world.coins) {
+        if (coin.collected) continue;
+        const cx = player.x + player.w / 2, cy = player.y + player.h / 2;
+        if (Math.hypot(cx - coin.x, cy - coin.y) < coin.r + 23) {
+          coin.collected = true;
+          coinsCollected++;
+          score++;
+          updateHUD();
+          playTone(880, 0.07);
+        }
+      }
+    }
+
+    function updateCamera() {
+      world.cameraX = Math.max(0, Math.min(world.width - canvas.width, player.x - canvas.width * 0.36));
+    }
+
+    function drawWorld() {
+      const cam = world.cameraX;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      sky.addColorStop(0, "#78d5ff"); sky.addColorStop(1, "#e4f9ff");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Sun and distant hills
+      ctx.fillStyle = "#ffe16a"; ctx.beginPath(); ctx.arc(830, 75, 34, 0, Math.PI * 2); ctx.fill();
+      for (let i = 0; i < 7; i++) {
+        const x = ((i * 210 - cam * 0.22) % 1500 + 1500) % 1500 - 100;
+        ctx.fillStyle = i % 2 ? "#83d6a0" : "#67c78b";
+        ctx.beginPath(); ctx.ellipse(x, 430, 170, 105, 0, Math.PI, 0); ctx.fill();
+      }
+      // Clouds
+      for (let i = 0; i < 9; i++) {
+        const x = ((i * 155 - cam * 0.4) % 1300 + 1300) % 1300 - 100;
+        drawCloud(x, 75 + (i % 3) * 40);
+      }
+
+      // Ground and platforms
+      for (const p of world.platforms) {
+        const x = p.x - cam;
+        if (x + p.w < -20 || x > canvas.width + 20) continue;
+        ctx.fillStyle = "#9a5b2d"; ctx.fillRect(x, p.y, p.w, p.h);
+        ctx.fillStyle = "#32a852"; ctx.fillRect(x, p.y, p.w, 12);
+        ctx.fillStyle = "#c78345";
+        for (let bx = x + 12; bx < x + p.w; bx += 34) {
+          ctx.fillRect(bx, p.y + 25, 15, 4);
+          ctx.fillRect(bx + 10, p.y + 55, 15, 4);
+        }
+      }
+
+      // Decorative trees
+      for (let i = 0; i < 12; i++) {
+        const x = i * 275 - cam;
+        if (x < -60 || x > canvas.width + 60) continue;
+        ctx.fillStyle = "#80502b"; ctx.fillRect(x, 410, 18, 55);
+        ctx.fillStyle = "#16803b";
+        ctx.beginPath(); ctx.arc(x + 9, 398, 29, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x - 8, 410, 20, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Coins
+      for (const coin of world.coins) {
+        if (coin.collected) continue;
+        const x = coin.x - cam;
+        if (x < -20 || x > canvas.width + 20) continue;
+        ctx.fillStyle = "#facc15"; ctx.beginPath(); ctx.arc(x, coin.y, coin.r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#b77900"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = "#fff3a3"; ctx.fillRect(x - 3, coin.y - 6, 4, 12);
+      }
+
+      // Question blocks
+      for (const block of world.blocks) {
+        const x = block.x - cam;
+        if (x < -60 || x > canvas.width + 60) continue;
+        ctx.fillStyle = block.used ? "#9ca3af" : "#facc15";
+        ctx.fillRect(x, block.y, block.w, block.h);
+        ctx.strokeStyle = "#8a5a00"; ctx.lineWidth = 3; ctx.strokeRect(x, block.y, block.w, block.h);
+        ctx.fillStyle = block.used ? "#4b5563" : "#7c3e00";
+        ctx.font = "bold 30px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(block.used ? "✓" : "?", x + block.w / 2, block.y + block.h / 2 + 1);
+      }
+
+      // Castle
+      const castleX = world.goalX - cam;
+      ctx.fillStyle = "#8d9bb0"; ctx.fillRect(castleX, 320, 115, 145);
+      ctx.fillStyle = "#dbe4ef"; ctx.fillRect(castleX + 15, 340, 85, 125);
+      ctx.fillStyle = "#53647c"; ctx.fillRect(castleX + 43, 405, 30, 60);
+      ctx.fillStyle = "#8d9bb0";
+      for (let i = 0; i < 3; i++) ctx.fillRect(castleX + i * 40, 290, 28, 40);
+      ctx.fillStyle = "#dc2626"; ctx.fillRect(castleX + 28, 265, 28, 20);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.fillText("ISTANA", castleX + 57, 250);
+
+      // Player
+      const px = player.x - cam, py = player.y;
+      // scarf
+      ctx.fillStyle = "#ef4444"; ctx.fillRect(px + 4, py + 15, 26, 8);
+      // head
+      ctx.fillStyle = "#f2c6a0"; ctx.fillRect(px + 6, py + 2, 23, 20);
+      // hair
+      ctx.fillStyle = "#533321"; ctx.fillRect(px + 5, py, 25, 7);
+      // body
+      ctx.fillStyle = "#2563eb"; ctx.fillRect(px + 4, py + 22, 27, 17);
+      // backpack
+      ctx.fillStyle = "#facc15"; ctx.fillRect(px, py + 24, 7, 15);
+      // legs
+      ctx.fillStyle = "#24324a"; ctx.fillRect(px + 5, py + 39, 9, 9); ctx.fillRect(px + 21, py + 39, 9, 9);
+      // face
+      ctx.fillStyle = "#172033"; ctx.fillRect(px + 22, py + 9, 3, 3);
+
+      // Progress banner
+      ctx.fillStyle = "rgba(16,42,86,.78)"; ctx.fillRect(16, 16, 220, 36);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 17px system-ui"; ctx.textAlign = "left";
+      ctx.fillText(`Checkpoint: ${questionIndex}/5`, 28, 39);
+
+      if (questionIndex === 5 && player.x + player.w >= world.goalX) {
+        endGame(true);
+      }
+    }
+
+    function drawCloud(x, y) {
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.beginPath(); ctx.arc(x, y, 19, 0, Math.PI * 2); ctx.arc(x + 23, y - 10, 24, 0, Math.PI * 2);
+      ctx.arc(x + 48, y, 18, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function checkBlockCollision() {
+      if (activeQuestion !== -1 || questionIndex >= 5) return;
+      for (const block of world.blocks) {
+        if (block.used || block.question !== questionIndex) continue;
+        const px = player.x, py = player.y;
+        const hit = px < block.x + block.w && px + player.w > block.x &&
+          py < block.y + block.h && py + player.h > block.y;
+        if (hit) { openQuestion(block.question); break; }
+      }
+    }
+
+    function openQuestion(index) {
+      activeQuestion = index;
+      quizAnswered = false;
+      gameState = "quiz";
+      const q = QUESTIONS[index];
+      $("quizNumber").textContent = `Checkpoint ${index + 1}/5`;
+      $("quizTitle").textContent = q.title;
+      $("quizQuestion").textContent = q.question;
+      $("quizFeedback").className = "feedback hidden";
+      $("quizFeedback").textContent = "";
+      $("continueButton").classList.add("hidden");
+      const answerButtons = $("answerButtons");
+      answerButtons.innerHTML = "";
+      q.options.forEach((option, i) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer-btn";
+        button.textContent = option;
+        button.addEventListener("click", () => answerQuestion(i));
+        answerButtons.appendChild(button);
+      });
+      quizOverlay.classList.remove("hidden");
+    }
+
+    function answerQuestion(choice) {
+      if (quizAnswered || activeQuestion < 0) return;
+      quizAnswered = true;
+      const q = QUESTIONS[activeQuestion];
+      const buttons = [...$("answerButtons").querySelectorAll("button")];
+      buttons.forEach((button, i) => {
+        button.disabled = true;
+        if (i === q.correct) button.style.borderColor = "#16a34a";
+        if (i === choice && i !== q.correct) button.style.borderColor = "#dc2626";
+      });
+      const feedback = $("quizFeedback");
+      feedback.classList.remove("hidden");
+      if (choice === q.correct) {
+        score += 5;
+        questionIndex++;
+        const block = world.blocks.find(b => b.question === activeQuestion);
+        if (block) block.used = true;
+        feedback.classList.add("good");
+        feedback.textContent = q.good;
+        playTone(660, 0.09); setTimeout(() => playTone(880, 0.12), 100);
+      } else {
+        lives--;
+        feedback.classList.add("bad");
+        feedback.textContent = q.bad + (lives > 0 ? ` Baki nyawa: ${lives}.` : " Nyawa habis!");
+        playTone(180, 0.22);
+      }
+      updateHUD();
+      $("continueButton").textContent = lives <= 0 ? "LIHAT KEPUTUSAN" : (choice === q.correct ? "TERUSKAN ▶" : "CUBA LAGI ↻");
+      $("continueButton").classList.remove("hidden");
+      $("continueButton").onclick = () => {
+        quizOverlay.classList.add("hidden");
+        activeQuestion = -1;
+        if (lives <= 0) { endGame(false); return; }
+        if (choice !== q.correct) {
+          // Move slightly away so the player can approach the same block again.
+          player.x = Math.max(0, player.x - 65);
+        }
+        gameState = "playing";
+        lastFrame = 0;
+        animationId = requestAnimationFrame(gameLoop);
+      };
+    }
+
+    function endGame(won) {
+      if (gameState === "ended") return;
+      gameState = "ended";
+      if (animationId) cancelAnimationFrame(animationId);
+      quizOverlay.classList.add("hidden");
+      gameScreen.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+      $("resultIcon").textContent = won ? "🏆" : "💪";
+      $("resultTitle").textContent = won ? "Tahniah, Pejuang Negara!" : "Permainan Tamat";
+      $("resultMessage").textContent = won
+        ? "Anda berjaya menyelesaikan Misi Cinta akan Negara!"
+        : "Jangan berputus asa. Cuba lagi untuk melengkapkan misi!";
+      $("resultScore").textContent = `${score} mata`;
+      $("resultList").innerHTML = "";
+      const rows = [
+        ["Nama murid", studentName],
+        ["Kelas", studentClass],
+        ["Jawapan betul", `${questionIndex}/5`],
+        ["Baki nyawa", String(Math.max(0, lives))],
+        ["Syiling dikutip", String(coinsCollected)]
+      ];
+      rows.forEach(([label, value]) => {
+        const li = document.createElement("li");
+        const strong = document.createElement("strong");
+        strong.textContent = label + ": ";
+        li.appendChild(strong);
+        li.appendChild(document.createTextNode(value));
+        $("resultList").appendChild(li);
+      });
+      stopMusic();
+    }
+
+    function showMenu() {
+      gameState = "menu";
+      if (animationId) cancelAnimationFrame(animationId);
+      stopMusic();
+      resultScreen.classList.add("hidden");
+      gameScreen.classList.add("hidden");
+      startScreen.classList.remove("hidden");
+      $("studentName").value = studentName;
+      $("studentClass").value = studentClass;
+    }
+
+    function onKeyDown(event) {
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", " "].includes(event.key)) event.preventDefault();
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") keys.left = true;
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") keys.right = true;
+      if (["ArrowUp", " ", "w", "W"].includes(event.key)) jumpQueued = true;
+    }
+    function onKeyUp(event) {
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") keys.left = false;
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") keys.right = false;
+    }
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", () => { keys.left = false; keys.right = false; });
+
+    document.querySelectorAll("[data-control]").forEach(button => {
+      const control = button.dataset.control;
+      const press = (event) => {
+        event.preventDefault();
+        if (control === "left") keys.left = true;
+        if (control === "right") keys.right = true;
+        if (control === "jump") jumpQueued = true;
+      };
+      const release = (event) => {
+        event.preventDefault();
+        if (control === "left") keys.left = false;
+        if (control === "right") keys.right = false;
+      };
+      button.addEventListener("pointerdown", press);
+      button.addEventListener("pointerup", release);
+      button.addEventListener("pointercancel", release);
+      button.addEventListener("pointerleave", release);
+      button.addEventListener("contextmenu", e => e.preventDefault());
+    });
+
+    $("startForm").addEventListener("submit", event => {
+      event.preventDefault();
+      studentName = $("studentName").value.trim();
+      studentClass = $("studentClass").value.trim();
+      if (!studentName || !studentClass) return;
+      // Starting the game is a user gesture, so browsers can allow audio playback.
+      resetGame();
+      startMusic();
+    });
+    $("restartButton").addEventListener("click", () => { resetGame(); startMusic(); });
+    $("menuButton").addEventListener("click", showMenu);
+
+    function playTone(frequency, duration, type = "square", volume = 0.035, when = 0) {
+      try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === "suspended") audioContext.resume();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const startAt = audioContext.currentTime + when;
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.linearRampToValueAtTime(volume, startAt + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(startAt);
+        oscillator.stop(startAt + duration + 0.02);
+      } catch (_) { /* Audio is optional on unsupported browsers. */ }
+    }
+
+    function startMusic() {
+      if (musicOn) return;
+      try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === "suspended") audioContext.resume();
+      } catch (_) { return; }
+      musicOn = true;
+      $("musicToggle").textContent = "♫ Muzik: ON";
+      $("musicToggle").setAttribute("aria-pressed", "true");
+
+      // Original relaxed retro platformer chiptune: slower melody, bass and light rhythmic accents.
+      // It is composed for this game and does not copy a copyrighted game theme.
+      const melody = [
+        659, 784, 988, 784, 659, 523, 587, 659,
+        784, 988, 1175, 988, 784, 659, 587, 659,
+        523, 659, 784, 659, 587, 698, 880, 698,
+        659, 784, 988, 1175, 988, 784, 659, 523
+      ];
+      const bass = [131, 131, 165, 165, 175, 175, 147, 147];
+      let step = 0;
+      const playNext = () => {
+        if (!musicOn || gameState === "ended" || gameState === "menu") return;
+        const note = melody[step % melody.length];
+        const beat = step % 4;
+        playTone(note, 0.25, "square", 0.026);
+        if (beat === 0 || beat === 2) {
+          playTone(bass[Math.floor(step / 2) % bass.length], 0.34, "triangle", 0.045, 0.015);
+        }
+        // Short bright harmony accents make the tune feel more game-like.
+        if (step % 8 === 4) playTone(note * 1.5, 0.16, "triangle", 0.012, 0.025);
+        step++;
+        musicTimer = setTimeout(playNext, 285);
+      };
+      playNext();
+    }
+
+    function stopMusic() {
+      musicOn = false;
+      if (musicTimer) clearTimeout(musicTimer);
+      musicTimer = null;
+      const toggle = $("musicToggle");
+      if (toggle) { toggle.textContent = "♫ Muzik: OFF"; toggle.setAttribute("aria-pressed", "false"); }
+    }
+    $("musicToggle").addEventListener("click", () => musicOn ? stopMusic() : startMusic());
+
+    buildWorld();
+    drawWorld();
+  </script>
+</body>
+</html>
